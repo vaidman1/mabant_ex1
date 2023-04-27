@@ -162,6 +162,54 @@ class AVLNode(object):
 	"""
 	def is_real_node(self):
 		return self is not None
+	def transform(self,num):
+		if num==2:
+			a=self.get_left()
+			num1=a.get_left().get_height()-a.get_right().get_height()
+			if num1==1:
+				a.get_right().set_parent(self)
+				self.set_left(a.get_right())
+				a.set_parent(self.parent)
+				a.set_right(self)
+				self.set_parent(a)
+				self.set_height(self.get_height()-2)
+			else:
+				b = a.get_right()
+				num2 = b.get_left().get_height() - b.get_right().get_height()
+				self.set_left(b.get_right())
+				b.set_parent(self.get_parent())
+				self.set_parent(b)
+				a.set_right(b.get_left())
+				a.set_parent(b)
+				b.set_left(a)
+				b.set_right(self)
+				self.set_height(self.get_height()-2)
+				a.set_height(a.get_height()-1)
+				b.set_height(a.get_height()+1)
+		else:
+			a = self.get_right()
+			num1 = a.get_left().get_height() - a.get_right().get_height()
+			if num1 == -1:
+				a.get_left().set_parent(self)
+				self.set_right(a.get_left())
+				a.set_parent(self.parent)
+				a.set_left(self)
+				self.set_parent(a)
+				self.set_height(self.get_height() - 2)
+			else:
+				b = a.get_left()
+				num2 = b.get_left().get_height() - b.get_right().get_height()
+				self.set_right(b.get_left())
+				b.set_parent(self.get_parent())
+				self.set_parent(b)
+				a.set_left(b.get_right())
+				a.set_parent(b)
+				b.set_right(a)
+				b.set_left(self)
+				self.set_height(self.get_height() - 2)
+				a.set_height(a.get_height() - 1)
+				b.set_height(a.get_height() + 1)
+
 
 node=AVLNode(2,2)
 b=node.get_left()
@@ -218,7 +266,6 @@ class AVLTree(object):
 			a=self.get_root()
 			while True:
 				if a.get_key()<key:
-					# hight??
 					a.set_size(a.get_size+1)
 					if a.get_right() is None:
 						node.set_perant(a)
@@ -232,11 +279,17 @@ class AVLTree(object):
 						a.set_left(node)
 						break
 					a=a.get_left()
-					# hight??
-	# 		to make an AVL
-
-
-
+			a=node
+			while a.get_parent() is not None:
+				if a.get_parent().get_hight()>a.get_height()+1:
+					break
+				a=a.get_parent()
+				a.set_height(a.get_height()+1)
+				r=a.get_right().get_height()
+				l=a.get_left().get_height()
+				if abs(r-l)>1:
+					a.transform(l-r) # to make an AVL
+					break
 
 
 
