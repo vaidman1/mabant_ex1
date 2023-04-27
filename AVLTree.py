@@ -19,14 +19,27 @@ class AVLNode(object):
 	# @param value: data of your node
 
 	# """
-	def __init__(self, key, value):
-		self.key = key
-		self.value = value
-		self.left = None
-		self.right = None
+	def __init__(self, key, value,isR=True):
 		self.parent = None
-		self.height = 1
-		self.size = 1
+		self.isR=isR
+		if isR==True:
+			self.height = 0
+			self.size = 1
+			self.key = key
+			self.value = value
+			self.left = AVLNode(-1,None,False)
+			self.right = AVLNode(-1,None,False)
+			self.left.parent=self
+			self.right.parent=self
+		else:
+			self.size = 0
+			self.height=-1
+			self.left = None
+			self.right = None
+			self.key=-1
+			self.value=None
+
+
 
 
 	"""
@@ -161,7 +174,9 @@ class AVLNode(object):
 	@returns: False if self is a virtual node, True otherwise.
 	"""
 	def is_real_node(self):
-		return self is not None
+		return self.isR
+
+
 	def transform(self,num):
 		if num==2:
 			a=self.get_left()
@@ -175,7 +190,6 @@ class AVLNode(object):
 				self.set_height(self.get_height()-2)
 			else:
 				b = a.get_right()
-				num2 = b.get_left().get_height() - b.get_right().get_height()
 				self.set_left(b.get_right())
 				b.set_parent(self.get_parent())
 				self.set_parent(b)
@@ -198,7 +212,6 @@ class AVLNode(object):
 				self.set_height(self.get_height() - 2)
 			else:
 				b = a.get_left()
-				num2 = b.get_left().get_height() - b.get_right().get_height()
 				self.set_right(b.get_left())
 				b.set_parent(self.get_parent())
 				self.set_parent(b)
@@ -211,9 +224,6 @@ class AVLNode(object):
 				b.set_height(a.get_height() + 1)
 
 
-node=AVLNode(2,2)
-b=node.get_left()
-print(b.is_real_node())
 """
 A class implementing an AVL tree.
 """
@@ -240,7 +250,7 @@ class AVLTree(object):
 	def search(self, key):
 		a=self.get_root()
 		while a.get_key()!=key:
-			if a is None:
+			if a.is_real_node()==False:
 				return None
 			if a.get_key()<key:
 				a=a.get_right()
@@ -267,14 +277,16 @@ class AVLTree(object):
 			while True:
 				if a.get_key()<key:
 					a.set_size(a.get_size+1)
-					if a.get_right() is None:
+					if a.get_right().is_real_node()==False:
+						a.get_right.set_parent(None)
 						node.set_perant(a)
 						a.set_right(node)
 						break
 					a=a.get_right()
 				else:
 					a.set_size(a.get_size + 1)
-					if a.get_left() is None:
+					if a.get_left().is_real_node()==False:
+						a.get_left().set_parent(None)
 						node.set_perant(a)
 						a.set_left(node)
 						break
@@ -312,7 +324,7 @@ class AVLTree(object):
 	def avl_to_array(self):
 		def avll(self, node):
 			lst = []
-			if node is None:
+			if node.is_real_node()==False:
 				return []
 			lst+=avll(node.get_left())
 			lst+=[(node.get_key(), node.get_value())]
