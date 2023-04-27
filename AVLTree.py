@@ -8,6 +8,7 @@
 
 """A class represnting a node in an AVL tree"""
 
+
 class AVLNode(object):
 
 # """
@@ -26,13 +27,14 @@ class AVLNode(object):
 		self.parent = None
 		self.height = 1
 		self.size = 1
-		
-"""
-	# returns the key
-	#
-	# @rtype: int or None
-	# @returns: the key of self, None if the node is virtual
+
+
 	"""
+    # returns the key
+    #
+    # @rtype: int or None
+    # @returns: the key of self, None if the node is virtual
+    """
 	def get_key(self):
 		return self.key
 
@@ -159,10 +161,11 @@ class AVLNode(object):
 	@returns: False if self is a virtual node, True otherwise.
 	"""
 	def is_real_node(self):
-		return self!=None
+		return self is not None
 
-
-
+node=AVLNode(2,2)
+b=node.get_left()
+print(b.is_real_node())
 """
 A class implementing an AVL tree.
 """
@@ -189,7 +192,7 @@ class AVLTree(object):
 	def search(self, key):
 		a=self.get_root()
 		while a.get_key()!=key:
-			if a.is_real_node()==False:
+			if a is None:
 				return None
 			if a.get_key()<key:
 				a=a.get_right()
@@ -217,14 +220,14 @@ class AVLTree(object):
 				if a.get_key()<key:
 					# hight??
 					a.set_size(a.get_size+1)
-					if a.get_right().is_real_node()==False:
+					if a.get_right() is None:
 						node.set_perant(a)
 						a.set_right(node)
 						break
 					a=a.get_right()
 				else:
 					a.set_size(a.get_size + 1)
-					if a.get_left().is_real_node()==False:
+					if a.get_left() is None:
 						node.set_perant(a)
 						a.set_left(node)
 						break
@@ -256,7 +259,7 @@ class AVLTree(object):
 	def avl_to_array(self):
 		def avll(self, node):
 			lst = []
-			if node==None:
+			if node is None:
 				return []
 			lst+=avll(node.get_left())
 			lst+=[(node.get_key(), node.get_value())]
@@ -289,6 +292,7 @@ class AVLTree(object):
 	dictionary larger than node.key.
 	"""
 	def split(self, node):
+		lst=[]
 		a=AVLTree()
 		b=AVLTree()
 		c=self.get_root()
