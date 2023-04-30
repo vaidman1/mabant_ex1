@@ -1,7 +1,7 @@
 #username - vaidman1
 #id1      - 207001819
 #name1    - michael vaidman
-#id2      - complete info
+#id2      - 212830392
 #name2    - talya cohen
 
 
@@ -357,18 +357,23 @@ class AVLTree(object):
 	dictionary larger than node.key.
 	"""
 	def split(self, node):
-		lst=[]
-		a=AVLTree()
-		b=AVLTree()
-		c=self.get_root()
-		d=node.get_right()
-		if c.get_key()<node.get_key():
-			a.root =c
-		else:
-			b.root =c
-		while True:
-			if node.get_parent().get_key()<node.get_key():
-
+		res=[]
+		node_1 = node
+		while node.get_parent() is not None:
+			if (node.get_parent().get_key() < node.get_key()) and (node.get_left() is not None):
+				node.get_parent().get_left().join(node.get_left(), node.get_key(), node.get_value())
+			node = node.get_parent()
+		T = AVLTree()
+		T.root = node
+		res.insert(0 , T)
+		while node_1.get_parent() is not None :
+			if (node_1.get_parent.get_key() > node_1.get_key()) and (node_1.get_right() is not None):
+				node_1.get_parent.get_right().join(node_1.get_right(), node_1.get_key(), node_1.get_value())
+			node_1 = node_1.get_parent()
+		T_1 = AVLTree()
+		T_1.root = node_1
+		res.insert(1,T_1)
+		return res
 
 	
 	"""joins self with key and another AVLTree
@@ -385,7 +390,49 @@ class AVLTree(object):
 	@returns: the absolute value of the difference between the height of the AVL trees joined
 	"""
 	def join(self, tree, key, val):
-		return None
+		node_s = self.get_root()
+		node_t = tree.get_root()
+		h = node_s.get_height()
+		h_t = node_t.get_height()
+		node_new = AVLNode(key, val)
+		if h == h_t:
+			if node_t.get_key() < node_s.get_key():
+				self = tree.join(self, key, val)
+			node_new.set_left(node_s)
+			node_new.set_right(node_t)
+			node_new.set_height(max(node_s.get_height(), node_t.get_height()) + 1)
+			tree = None
+			return 1
+		if node_s.get_key() < node_t.get_key():
+			if h < h_t:
+				while node_t.get_left.get_height() > h:
+					node_t = node_t.get_left()
+				node_t.get_parent().set_left(node_new)
+				node_new.set_left(node_s)
+				node_new.set_right(node_t)
+				node_new.set_height(h + 1)
+				s = node_new.get_left().get_size() + 1
+				self.root = tree.get_root()
+			else:
+				while node_s.get_right.get_height > h_t:
+					node_s = node_s.get_right()
+				node_s.get_parent().set_right(node_new)
+				node_new.set_right(node_t)
+				node_new.set_left(node_s)
+				node_new.set_height(h_t+1)
+				s = node_new.get_right().get_size() + 1
+			node = node_new.get_parent()
+			while node.get_parent() is not None:
+				node.set_size(node.get_size() + s)
+				node = node.get_parent()
+			bf = node_new.get_height() - node_new.get_parent().get_right().get_height()
+			if abs(bf) == 2:
+				node_new.get_parent().tranform(bf)
+			node_new.set_size(node_new.get_left().get_size() + 1 + node_new.get_right().get_size())
+		else:
+			self = tree.join(self, key, val)
+		tree = None
+		return abs(h-h_t)+1
 
 
 	"""compute the rank of node in the self
