@@ -27,10 +27,8 @@ class AVLNode(object):
 			self.size = 1
 			self.key = key
 			self.value = value
-			self.left = AVLNode(-1,None,False)
-			self.right = AVLNode(-1,None,False)
-			self.left.parent=self
-			self.right.parent=self
+			self.set_left(AVLNode(-1,None,False))
+			self.right(AVLNode(-1,None,False))
 		else:
 			self.size = 0
 			self.height=-1
@@ -130,6 +128,7 @@ class AVLNode(object):
 	"""
 	def set_left(self, node):
 		self.node=node
+		node.set_perant(self)
 
 
 	"""sets right child
@@ -139,6 +138,7 @@ class AVLNode(object):
 	"""
 	def set_right(self, node):
 		self.right=node
+		node.set_perant(self)
 
 
 	"""sets parent
@@ -178,51 +178,72 @@ class AVLNode(object):
 
 
 	def transform(self,num):
+		parent=self.get_parent()
+		pr=-1
+		if parent.get_key<self.get_key():
+			pr=1
 		if num==2:
 			a=self.get_left()
 			num1=a.get_left().get_height()-a.get_right().get_height()
-			if num1==1:
-				a.get_right().set_parent(self)
+			if num1>=0:
 				self.set_left(a.get_right())
-				a.set_parent(self.parent)
+				if pr==1:
+					parent.set_right(a)
+				else:
+					parent.set_left(a)
 				a.set_right(self)
-				self.set_parent(a)
-				self.set_height(self.get_height()-2)
+				self.set_height(self.get_height()-1-num1)
+				self.set_size(self.get_size()-a.get_size()+self.get_left().get_size())
+				a.set_size(a.get_size()+self.get_size())
+				return a
 			else:
 				b = a.get_right()
+				if pr==1:
+					parent.set_right(b)
+				else:
+					parent.set_left(b)
 				self.set_left(b.get_right())
-				b.set_parent(self.get_parent())
-				self.set_parent(b)
 				a.set_right(b.get_left())
-				a.set_parent(b)
 				b.set_left(a)
 				b.set_right(self)
 				self.set_height(self.get_height()-2)
 				a.set_height(a.get_height()-1)
 				b.set_height(a.get_height()+1)
+				self.set_size(self.get_size() - a.get_size())
+				a.set_size(a.get_size() - b.get_size())
+				b.get_size(b.get_size()+a.get_size()+self.get_size())
+				return b
 		else:
 			a = self.get_right()
 			num1 = a.get_left().get_height() - a.get_right().get_height()
-			if num1 == -1:
-				a.get_left().set_parent(self)
+			if num1 <= 0:
 				self.set_right(a.get_left())
-				a.set_parent(self.parent)
+				if pr == 1:
+					parent.set_right(a)
+				else:
+					parent.set_left(a)
 				a.set_left(self)
-				self.set_parent(a)
-				self.set_height(self.get_height() - 2)
+				self.set_height(self.get_height() - 1+num1)
+				self.set_size(self.get_size() - a.get_size()+self.get_right().get_size())
+				a.set_size(a.get_size() + self.get_size())
+				return a
 			else:
 				b = a.get_left()
+				if pr == 1:
+					parent.set_right(b)
+				else:
+					parent.set_left(b)
 				self.set_right(b.get_left())
-				b.set_parent(self.get_parent())
-				self.set_parent(b)
 				a.set_left(b.get_right())
-				a.set_parent(b)
 				b.set_right(a)
 				b.set_left(self)
 				self.set_height(self.get_height() - 2)
 				a.set_height(a.get_height() - 1)
 				b.set_height(a.get_height() + 1)
-
+				self.set_size(self.get_size() - a.get_size())
+				a.set_size(a.get_size() - b.get_size())
+				b.get_size(b.get_size() + a.get_size() + self.get_size())
+				return b
 
 """
 A class implementing an AVL tree.
@@ -278,22 +299,18 @@ class AVLTree(object):
 				if a.get_key()<key:
 					a.set_size(a.get_size+1)
 					if a.get_right().is_real_node()==False:
-						a.get_right.set_parent(None)
-						node.set_perant(a)
 						a.set_right(node)
 						break
 					a=a.get_right()
 				else:
 					a.set_size(a.get_size + 1)
 					if a.get_left().is_real_node()==False:
-						a.get_left().set_parent(None)
-						node.set_perant(a)
 						a.set_left(node)
 						break
 					a=a.get_left()
 			a=node
 			while a.get_parent() is not None:
-				if a.get_parent().get_hight()>a.get_height()+1:
+				if a.get_parent().get_hight()>=a.get_height()+1:
 					break
 				a=a.get_parent()
 				a.set_height(a.get_height()+1)
@@ -313,7 +330,58 @@ class AVLTree(object):
 	@returns: the number of rebalancing operation due to AVL rebalancing
 	"""
 	def delete(self, node):
-		return -1
+		a=node.get_parent()
+		parent=node.get_parent()
+		while parent is not None:
+			parent.set_size(parent.get_size()-1)
+			parent=parent.get_parent()
+		pr=-1
+		if a.get_key()<node.get_key():
+			pr=1
+		c=None
+		bL=node.get_left()
+		bR=node.get_right()
+		num =bL.get_height()-bR.get_height()
+		parent=node.get_parent()
+		if num>0:
+			c=bL
+			if c.get_right().is_real_node():
+				while c.get_right().is_real_node():
+					c.set_size(c.get_size()-1)
+					c=c.get_right()
+				parent = c.get_parent()
+				parent.set_right(c.get_left)
+				c.set_left(bL)
+			c.set_right(bR)
+		else:
+			c=bR
+			if c.get_left().is_real_node():
+				while c.get_left().is_real_node():
+					c.set_size(c.get_size() - 1)
+					c=c.get_left()
+				parent = c.get_parent()
+				parent.set_left(c.get_left)
+				c.set_right(bL)
+			c.set_left(bR)
+		if pr == 1:
+			a.set_right(c)
+		else:
+			a.set_left(c)
+		while parent is not None:
+			L=parent.set_left().get_height()
+			R=parent.set_right().get_height()
+			if R>L:
+				parent.set_height(R+1)
+			else:
+				parent.set_height(L + 1)
+
+			if abs(R-L)==2:
+				parent=parent.transform(L-R)
+				continue
+			h=parent.set_height()
+			if R+1==h or L+1==h:
+				break
+			parent=parent.get_parent()
 
 
 	"""returns an array representing dictionary 
