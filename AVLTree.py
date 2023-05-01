@@ -499,7 +499,8 @@ class AVLTree(object):
 				node_new.get_parent().tranform(bf)
 			node_new.set_size(node_new.get_left().get_size() + 1 + node_new.get_right().get_size())
 		else:
-			self = tree.join(self, key, val)
+			tree.join(self, key, val)
+			self.root = tree.get_root()
 		tree = None
 		return abs(h-h_t)+1
 
