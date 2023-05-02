@@ -470,6 +470,7 @@ class AVLTree(object):
 			node_new.set_left(node_s)
 			node_new.set_right(node_t)
 			node_new.set_height(max(node_s.get_height(), node_t.get_height()) + 1)
+			node_new.set_size(node_t.get_size() + node_s.get_size() + 1)
 			tree = None
 			return 1
 		if node_s.get_key() < node_t.get_key():
@@ -480,7 +481,6 @@ class AVLTree(object):
 				node_new.set_left(node_s)
 				node_new.set_right(node_t)
 				node_new.set_height(h + 1)
-				s = node_new.get_left().get_size() + 1
 				self.root = tree.get_root()
 			else:
 				while node_s.get_right.get_height > h_t:
@@ -489,15 +489,16 @@ class AVLTree(object):
 				node_new.set_right(node_t)
 				node_new.set_left(node_s)
 				node_new.set_height(h_t+1)
-				s = node_new.get_right().get_size() + 1
 			node = node_new.get_parent()
 			while node.get_parent() is not None:
-				node.set_size(node.get_size() + s)
-				node = node.get_parent()
-			bf = node_new.get_height() - node_new.get_parent().get_right().get_height()
-			if abs(bf) == 2:
-				node_new.get_parent().tranform(bf)
-			node_new.set_size(node_new.get_left().get_size() + 1 + node_new.get_right().get_size())
+				bf = node.get_height() - node.get_right().get_height()
+				if abs(bf) == 2:
+					node.tranform(bf)
+					node_l = node.get_left()
+					node_r = node.get_right()
+					node_l.set_size(node_l.get_left().get_size() + node_l.get_right().get_size() + 1)
+					node_r.set_size(node_r.get_left().get_size() + node_r.get_right().get_size() + 1)
+				node.set_size(node.get_left().get_size() + 1 + node.get_right().get_size())
 		else:
 			tree.join(self, key, val)
 			self.root = tree.get_root()
