@@ -28,7 +28,7 @@ class AVLNode(object):
 			self.key = key
 			self.value = value
 			self.set_left(AVLNode(-1,None,False))
-			self.right(AVLNode(-1,None,False))
+			self.set_right(AVLNode(-1,None,False))
 		else:
 			self.size = 0
 			self.height=-1
@@ -127,8 +127,8 @@ class AVLNode(object):
 	@param node: a node
 	"""
 	def set_left(self, node):
-		self.node=node
-		node.set_perant(self)
+		self.left=node
+		node.parent=self
 
 
 	"""sets right child
@@ -138,7 +138,7 @@ class AVLNode(object):
 	"""
 	def set_right(self, node):
 		self.right=node
-		node.set_perant(self)
+		node.parent=self
 
 
 	"""sets parent
@@ -178,19 +178,11 @@ class AVLNode(object):
 
 
 	def transform(self,num):
-		parent=self.get_parent()
-		pr=-1
-		if parent.get_key<self.get_key():
-			pr=1
 		if num==2:
 			a=self.get_left()
 			num1=a.get_left().get_height()-a.get_right().get_height()
 			if num1>=0:
 				self.set_left(a.get_right())
-				if pr==1:
-					parent.set_right(a)
-				else:
-					parent.set_left(a)
 				a.set_right(self)
 				self.set_height(self.get_height()-1-num1)
 				self.set_size(self.get_size()-a.get_size()+self.get_left().get_size())
@@ -198,10 +190,6 @@ class AVLNode(object):
 				return a
 			else:
 				b = a.get_right()
-				if pr==1:
-					parent.set_right(b)
-				else:
-					parent.set_left(b)
 				self.set_left(b.get_right())
 				a.set_right(b.get_left())
 				b.set_left(a)
@@ -218,10 +206,6 @@ class AVLNode(object):
 			num1 = a.get_left().get_height() - a.get_right().get_height()
 			if num1 <= 0:
 				self.set_right(a.get_left())
-				if pr == 1:
-					parent.set_right(a)
-				else:
-					parent.set_left(a)
 				a.set_left(self)
 				self.set_height(self.get_height() - 1+num1)
 				self.set_size(self.get_size() - a.get_size()+self.get_right().get_size())
@@ -229,10 +213,6 @@ class AVLNode(object):
 				return a
 			else:
 				b = a.get_left()
-				if pr == 1:
-					parent.set_right(b)
-				else:
-					parent.set_left(b)
 				self.set_right(b.get_left())
 				a.set_left(b.get_right())
 				b.set_right(a)
@@ -291,33 +271,41 @@ class AVLTree(object):
 	"""
 	def insert(self, key, val):
 		node =AVLNode(key,val)
-		if self.get_root() ==None:
+		if self.root is None:
 			self.root=node
 		else:
-			a=self.get_root()
+			a=self.root
 			while True:
 				if a.get_key()<key:
-					a.set_size(a.get_size+1)
+					a.set_size(a.get_size()+1)
 					if a.get_right().is_real_node()==False:
 						a.set_right(node)
 						break
 					a=a.get_right()
 				else:
-					a.set_size(a.get_size + 1)
+					a.set_size(a.get_size() + 1)
 					if a.get_left().is_real_node()==False:
 						a.set_left(node)
 						break
 					a=a.get_left()
-			a=node
-			while a.get_parent() is not None:
-				if a.get_parent().get_hight()>=a.get_height()+1:
+			b=node
+			while b.get_parent() is not None:
+				if b.get_parent().get_height()>=b.get_height()+1:
 					break
-				a=a.get_parent()
-				a.set_height(a.get_height()+1)
-				r=a.get_right().get_height()
-				l=a.get_left().get_height()
+				b=b.get_parent()
+				b.set_height(b.get_height()+1)
+				r=b.get_right().get_height()
+				l=b.get_left().get_height()
 				if abs(r-l)>1:
-					a.transform(l-r) # to make an AVL
+					if b==self.root:
+						self.root=b.transform(l-r)
+					else:
+						parent = b.get_parent
+						b=b.transform(l-r) # to make an AVL
+						if parent.get_key()<b.get_key():
+							parent.set_right(b)
+						else:
+							parent.set_left(b)
 					break
 
 
@@ -335,8 +323,11 @@ class AVLTree(object):
 		while parent is not None:
 			parent.set_size(parent.get_size()-1)
 			parent=parent.get_parent()
+		#############
 		pr=-1
-		if a.get_key()<node.get_key():
+		if a is None:
+			pr =0
+		elif a.get_key()<node.get_key():
 			pr=1
 		c=None
 		bL=node.get_left()
@@ -367,6 +358,7 @@ class AVLTree(object):
 			a.set_right(c)
 		else:
 			a.set_left(c)
+		#########
 		while parent is not None:
 			L=parent.set_left().get_height()
 			R=parent.set_right().get_height()
@@ -376,7 +368,15 @@ class AVLTree(object):
 				parent.set_height(L + 1)
 
 			if abs(R-L)==2:
-				parent=parent.transform(L-R)
+				if parent == self.root:
+					self.root = parent.transform(L - R)
+				else:
+					parent2 = parent.get_parent
+					parent = parent.transform(L - R)  # to make an AVL
+					if parent2.get_key() < parent.get_key():
+						parent2.set_right(parent)
+					else:
+						parent2.set_left(parent)
 				continue
 			h=parent.set_height()
 			if R+1==h or L+1==h:
@@ -442,7 +442,6 @@ class AVLTree(object):
 		T_1.root = node_1
 		res.insert(1,T_1)
 		return res
-
 
 	
 	"""joins self with key and another AVLTree
@@ -560,3 +559,88 @@ class AVLTree(object):
 	"""
 	def get_root(self):
 		return self.root()
+
+tree = AVLTree()
+tree.insert(1,1)
+tree.insert(2,2)
+tree.insert(3,3)
+tree.insert(4,4)
+node =tree.root
+tree.delete(node)
+node=tree.root
+left= node.get_left()
+print (left.get_key(),"  size:", left.get_size() , " height:" , left.get_height())
+while node!=None:
+	print (node.get_key(),"  size:", node.get_size() , " height:" , node.get_height())
+	node=node.get_right()
+def printree(t, bykey=True):
+    """Print a textual representation of t
+    bykey=True: show keys instead of values"""
+    # for row in trepr(t, bykey):
+    #        print(row)
+    return trepr(t, bykey)
+
+
+def trepr(t, bykey=False):
+    """Return a list of textual representations of the levels in t
+    bykey=True: show keys instead of values"""
+    if t == None:
+        return ["#"]
+
+    thistr = str(t.key) if bykey else str(t.val)
+
+    return conc(trepr(t.left, bykey), thistr, trepr(t.right, bykey))
+
+
+def conc(left, root, right):
+    """Return a concatenation of textual represantations of
+    a root node, its left node, and its right node
+    root is a string, and left and right are lists of strings"""
+
+    lwid = len(left[-1])
+    rwid = len(right[-1])
+    rootwid = len(root)
+
+    result = [(lwid + 1) * " " + root + (rwid + 1) * " "]
+
+    ls = leftspace(left[0])
+    rs = rightspace(right[0])
+    result.append(ls * " " + (lwid - ls) * "_" + "/" + rootwid * " " + "\\" + rs * "_" + (rwid - rs) * " ")
+
+    for i in range(max(len(left), len(right))):
+        row = ""
+        if i < len(left):
+            row += left[i]
+        else:
+            row += lwid * " "
+
+        row += (rootwid + 2) * " "
+
+        if i < len(right):
+            row += right[i]
+        else:
+            row += rwid * " "
+
+        result.append(row)
+
+    return result
+
+
+def leftspace(row):
+    """helper for conc"""
+    # row is the first row of a left node
+    # returns the index of where the second whitespace starts
+    i = len(row) - 1
+    while row[i] == " ":
+        i -= 1
+    return i + 1
+
+
+def rightspace(row):
+    """helper for conc"""
+    # row is the first row of a right node
+    # returns the index of where the first whitespace ends
+    i = 0
+    while row[i] == " ":
+        i += 1
+    return i
