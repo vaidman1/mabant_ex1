@@ -318,70 +318,108 @@ class AVLTree(object):
 	@returns: the number of rebalancing operation due to AVL rebalancing
 	"""
 	def delete(self, node):
-		a=node.get_parent()
-		parent=node.get_parent()
-		while parent is not None:
-			parent.set_size(parent.get_size()-1)
-			parent=parent.get_parent()
-		#############
-		pr=-1
-		if a is None:
-			pr =0
-		elif a.get_key()<node.get_key():
-			pr=1
-		c=None
-		bL=node.get_left()
-		bR=node.get_right()
-		num =bL.get_height()-bR.get_height()
-		parent=node.get_parent()
-		if num>0:
-			c=bL
-			if c.get_right().is_real_node():
-				while c.get_right().is_real_node():
-					c.set_size(c.get_size()-1)
-					c=c.get_right()
-				parent = c.get_parent()
-				parent.set_right(c.get_left)
-				c.set_left(bL)
-			c.set_right(bR)
-		else:
-			c=bR
-			if c.get_left().is_real_node():
-				while c.get_left().is_real_node():
-					c.set_size(c.get_size() - 1)
-					c=c.get_left()
-				parent = c.get_parent()
-				parent.set_left(c.get_left)
-				c.set_right(bL)
-			c.set_left(bR)
-		if pr == 1:
-			a.set_right(c)
-		else:
-			a.set_left(c)
-		#########
-		while parent is not None:
-			L=parent.set_left().get_height()
-			R=parent.set_right().get_height()
-			if R>L:
-				parent.set_height(R+1)
+		parent = node.get_parent()
+		# if parent is None:
+		#
+		node_L = node.get_left()
+		node_R = node.get_right()
+		leaf=False
+		if node_L.is_real_node()==False:
+			node_S=node_R
+			leaf=True
+		if node_R.is_real_node()==False:
+			node_S = node_L
+			leaf = True
+		if leaf:
+			if parent.get_right().get_key() == node.get_key():
+				parent.set_right(node_S)
 			else:
-				parent.set_height(L + 1)
-
-			if abs(R-L)==2:
-				if parent == self.root:
-					self.root = parent.transform(L - R)
+				parent.set_left(node_S)
+		else:
+			while node_R.get_left() is not None:
+				node_R = node_R.get_left()
+			succesor = parent
+			succ_parent = succesor.get_parent()
+			h = succ_parent.get_height()
+			succ_parent.set_left(succesor.get_right())
+			if node.get_parent().get_kay() > node.get_key():
+				node.get_parent().set_left(succesor)
+				succesor.set_left(node.get_left())
+				succesor.set_right(node.get_right())
+			else:
+				node.get_parent().set_right(succesor)
+				succesor.set_left(node.get_left())
+				succesor.set_right(node.get_right())
+			while succ_parent.get_parent() is not None:
+				bf =  succ_parent.get_left().get_height() - succ_parent.get_right().get_height()
+				if ((abs(bf) < 2 ) and (h == succ_parent.get_height())):
+					break;
+				elif ((abs(bf) < 2 ) and (h != succ_parent.get_height())):
+					succ_parent = succ_parent.get_parent()
+					h = succ_parent.get_height()
+					continue;
 				else:
-					parent2 = parent.get_parent
-					parent = parent.transform(L - R)  # to make an AVL
-					if parent2.get_key() < parent.get_key():
-						parent2.set_right(parent)
-					else:
-						parent2.set_left(parent)
-				continue
-			h=parent.set_height()
-			if R+1==h or L+1==h:
-				break
-			parent=parent.get_parent()
+					succ_parent.transform(bf)
+					h = succ_parent.get_parent()
+
+		# pr=-1
+		# if a is None:
+		# 	pr =0
+		# elif a.get_key()<node.get_key():
+		# 	pr=1
+		# c=None
+		# bL=node.get_left()
+		# bR=node.get_right()
+		# num =bL.get_height()-bR.get_height()
+		# parent=node.get_parent()
+		# if num>0:
+		# 	c=bL
+		# 	if c.get_right().is_real_node():
+		# 		while c.get_right().is_real_node():
+		# 			c.set_size(c.get_size()-1)
+		# 			c=c.get_right()
+		# 		parent = c.get_parent()
+		# 		parent.set_right(c.get_left)
+		# 		c.set_left(bL)
+		# 	c.set_right(bR)
+		# else:
+		# 	c=bR
+		# 	if c.get_left().is_real_node():
+		# 		while c.get_left().is_real_node():
+		# 			c.set_size(c.get_size() - 1)
+		# 			c=c.get_left()
+		# 		parent = c.get_parent()
+		# 		parent.set_left(c.get_left)
+		# 		c.set_right(bL)
+		# 	c.set_left(bR)
+		# if pr == 1:
+		# 	a.set_right(c)
+		# else:
+		# 	a.set_left(c)
+		# #########
+		# while parent is not None:
+		# 	L=parent.set_left().get_height()
+		# 	R=parent.set_right().get_height()
+		# 	if R>L:
+		# 		parent.set_height(R+1)
+		# 	else:
+		# 		parent.set_height(L + 1)
+		#
+		# 	if abs(R-L)==2:
+		# 		if parent == self.root:
+		# 			self.root = parent.transform(L - R)
+		# 		else:
+		# 			parent2 = parent.get_parent
+		# 			parent = parent.transform(L - R)  # to make an AVL
+		# 			if parent2.get_key() < parent.get_key():
+		# 				parent2.set_right(parent)
+		# 			else:
+		# 				parent2.set_left(parent)
+		# 		continue
+		# 	h=parent.set_height()
+		# 	if R+1==h or L+1==h:
+		# 		break
+		# 	parent=parent.get_parent()
 
 
 	"""returns an array representing dictionary 
